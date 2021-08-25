@@ -1,0 +1,17 @@
+C:\Users\Administrator\Desktop\ContentQuery\ContentQuery\bin\Debug\ContentQuery.exe
+C:\Users\Administrator\Desktop\ContentQuery\ContentQuery\bin\Debug\ContentQuery.pdb
+C:\Users\Administrator\Desktop\ContentQuery\ContentQuery\obj\x86\Debug\ContentQuery.Form1.resources
+C:\Users\Administrator\Desktop\ContentQuery\ContentQuery\obj\x86\Debug\ContentQuery.Properties.Resources.resources
+C:\Users\Administrator\Desktop\ContentQuery\ContentQuery\obj\x86\Debug\ContentQuery.csproj.GenerateResource.Cache
+C:\Users\Administrator\Desktop\ContentQuery\ContentQuery\obj\x86\Debug\ContentQuery.exe
+C:\Users\Administrator\Desktop\ContentQuery\ContentQuery\obj\x86\Debug\ContentQuery.pdb
+C:\Users\Administrator\Desktop\ContentQuery\ContentQuery\obj\x86\Debug\ContentQuery.csprojResolveAssemblyReference.cache
+D:\Veasion\projects\c#\ContentQuery\ContentQuery\bin\Debug\ContentQuery.exe
+D:\Veasion\projects\c#\ContentQuery\ContentQuery\bin\Debug\ContentQuery.pdb
+D:\Veasion\projects\c#\ContentQuery\ContentQuery\obj\x86\Debug\ContentQuery.QueryForm.resources
+D:\Veasion\projects\c#\ContentQuery\ContentQuery\obj\x86\Debug\ContentQuery.Properties.Resources.resources
+D:\Veasion\projects\c#\ContentQuery\ContentQuery\obj\x86\Debug\ContentQuery.csproj.GenerateResource.cache
+D:\Veasion\projects\c#\ContentQuery\ContentQuery\obj\x86\Debug\ContentQuery.csproj.CoreCompileInputs.cache
+D:\Veasion\projects\c#\ContentQuery\ContentQuery\obj\x86\Debug\ContentQuery.exe
+D:\Veasion\projects\c#\ContentQuery\ContentQuery\obj\x86\Debug\ContentQuery.pdb
+D:\Veasion\projects\c#\ContentQuery\ContentQuery\obj\x86\Debug\ContentQuery.csprojAssemblyReference.cache

@@ -1,0 +1,9 @@
+D:\Veasion\projects\c#\ContentQuery\ContentQuery\obj\Debug\ContentQuery.QueryForm.resources
+D:\Veasion\projects\c#\ContentQuery\ContentQuery\obj\Debug\ContentQuery.Properties.Resources.resources
+D:\Veasion\projects\c#\ContentQuery\ContentQuery\obj\Debug\ContentQuery.csproj.GenerateResource.cache
+D:\Veasion\projects\c#\ContentQuery\ContentQuery\obj\Debug\ContentQuery.csproj.CoreCompileInputs.cache
+D:\Veasion\projects\c#\ContentQuery\ContentQuery\bin\Debug\ContentQuery.exe.config
+D:\Veasion\projects\c#\ContentQuery\ContentQuery\bin\Debug\ContentQuery.exe
+D:\Veasion\projects\c#\ContentQuery\ContentQuery\bin\Debug\ContentQuery.pdb
+D:\Veasion\projects\c#\ContentQuery\ContentQuery\obj\Debug\ContentQuery.exe
+D:\Veasion\projects\c#\ContentQuery\ContentQuery\obj\Debug\ContentQuery.pdb
