@@ -137,9 +137,9 @@
             this.cbo_xls.CheckState = System.Windows.Forms.CheckState.Checked;
             this.cbo_xls.Location = new System.Drawing.Point(114, 19);
             this.cbo_xls.Name = "cbo_xls";
-            this.cbo_xls.Size = new System.Drawing.Size(42, 21);
+            this.cbo_xls.Size = new System.Drawing.Size(48, 21);
             this.cbo_xls.TabIndex = 3;
-            this.cbo_xls.Text = "xls";
+            this.cbo_xls.Text = "xlsx";
             this.cbo_xls.UseVisualStyleBackColor = true;
             // 
             // linkLabel3
@@ -181,11 +181,11 @@
             this.cbo_doc.AutoSize = true;
             this.cbo_doc.Checked = true;
             this.cbo_doc.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cbo_doc.Location = new System.Drawing.Point(63, 19);
+            this.cbo_doc.Location = new System.Drawing.Point(59, 19);
             this.cbo_doc.Name = "cbo_doc";
-            this.cbo_doc.Size = new System.Drawing.Size(49, 21);
+            this.cbo_doc.Size = new System.Drawing.Size(55, 21);
             this.cbo_doc.TabIndex = 0;
-            this.cbo_doc.Text = "doc";
+            this.cbo_doc.Text = "docx";
             this.cbo_doc.UseVisualStyleBackColor = true;
             // 
             // cbotxt

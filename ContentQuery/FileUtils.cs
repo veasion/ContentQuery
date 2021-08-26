@@ -10,34 +10,16 @@ namespace ContentQuery
     class FileUtils
     {
 
-        public static bool hasTextByWordExcel(FileInfo fileInfo, string text)
+        public static bool hasTextByPackage(FileInfo fileInfo, string text, string uriString)
         {
-            string ext = fileInfo.Extension.ToLower();
-            string uriString;
-            if (ext.Contains("xls"))
-            {
-                uriString = "/xl/sharedStrings.xml";
-            }
-            else
-            {
-                uriString = "/word/document.xml";
-            }
             try
             {
                 using (Package package = Package.Open(fileInfo.FullName))
                 {
                     Uri docxUri = new Uri(uriString, UriKind.Relative);
-
-                    PackagePart docxPart = package.GetPart(docxUri);
-
-                    // XmlDocument docxXmlDocument = new XmlDocument();
-
-                    // docxXmlDocument.Load(docxPart.GetStream());
-
-                    // return docxXmlDocument.InnerText.ToString().Contains(text);
-
+                    PackagePart part = package.GetPart(docxUri);
                     string line;
-                    StreamReader sr = new StreamReader(docxPart.GetStream());
+                    StreamReader sr = new StreamReader(part.GetStream());
                     while ((line = sr.ReadLine()) != null)
                     {
                         if (line.IndexOf(text) != -1)
@@ -50,8 +32,8 @@ namespace ContentQuery
             }
             catch (Exception e)
             {
-                Console.Error.WriteLine("加载" + fileInfo.Name + "异常：" + e.Message);
-                return false;
+                Console.Error.WriteLine("加载" + fileInfo.FullName + "异常：" + e.Message);
+                throw e;
             }
         }
 

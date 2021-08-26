@@ -1,29 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Packaging;
 using System.Linq;
 using System.Text;
-using System.Xml;
 
 namespace ContentQuery
 {
-    class WordSearch : Search
+    class PptSearch : Search
     {
         public bool hasText(FileInfo fileInfo, string text)
         {
             try
             {
-                if (".doc".Equals(fileInfo.Extension.ToLower().Trim()))
+                if (".ppt".Equals(fileInfo.Extension.ToLower().Trim()))
                 {
                     return hasTextByOld(fileInfo, text);
                 }
-                return FileUtils.hasTextByPackage(fileInfo, text, "/word/document.xml");
+                for (int i = 1; i <= 30; i++)
+                {
+                    bool result = FileUtils.hasTextByPackage(fileInfo, text, "/ppt/slides/slide" + i + ".xml");
+                    if (result)
+                    {
+                        return true;
+                    }
+                }
             }
-            catch (Exception)
-            {
-                return false;
-            }
+            catch (Exception) { }
+            return false;
         }
 
         private bool hasTextByOld(FileInfo fileInfo, string text)

@@ -1,16 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 using System.Threading;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
-using System.Threading.Tasks;
 
 namespace ContentQuery
 {
@@ -22,8 +17,6 @@ namespace ContentQuery
         int count = 0;
         //文件Panel集合
         List<Panel> list = new List<Panel>();
-        //线程集合
-        List<Thread> trr = new List<Thread>();
         //是否按内容查询
         bool nrquery = true;
         // 最大搜索文件(300M)
@@ -33,6 +26,8 @@ namespace ContentQuery
 
         public QueryForm()
         {
+            ThreadPool.SetMinThreads(3, 3);
+            ThreadPool.SetMaxThreads(30, 100);
             InitializeComponent();
             string path = CacheHelper.getOtherText();
             if (path != null && !"".Equals(path) && Directory.Exists(path))
@@ -53,13 +48,13 @@ namespace ContentQuery
                 return;
             }
             list.Clear();
-            trr.Clear();
             this.pNr.Controls.Clear();
             this.labjg.Text = "查找结果(0)： 1/1";
             count = 0;
             string reg = "";
             reg += this.cbotxt.Checked ? "|txt" : "";
             reg += this.cbo_doc.Checked ? "|doc|docx" : "";
+            reg += this.cbo_xls.Checked ? "|xls|xlsx" : "";
             reg += this.cbo_md.Checked ? "|md" : "";
             string hz = this.txthz.Text.Trim();
             if (!hz.Equals(""))
@@ -79,9 +74,9 @@ namespace ContentQuery
                 nrquery = true;
             }
             txtreg = reg;
-            Thread t = new Thread(new ParameterizedThreadStart(Run));
-            trr.Add(t);
-            t.Start(this.txtpath.Text);
+
+            ThreadPool.QueueUserWorkItem(new WaitCallback(Run), this.txtpath.Text);
+
             this.timer1.Enabled = true;
             CacheHelper.cacheOtherText(this.txtpath.Text);
         }
@@ -170,7 +165,10 @@ namespace ContentQuery
                 }
 
             }
-            catch (Exception e) { Console.Error.WriteLine("查询异常: " + e.Message); }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine("查询异常: " + e.Message);
+            }
             //获取所有文件夹
             try
             {
@@ -179,13 +177,18 @@ namespace ContentQuery
                 {
                     foreach (var item in drr)
                     {
-                        Thread t = new Thread(new ParameterizedThreadStart(Run));
-                        t.Start(item.FullName);
-                        trr.Add(t);
+                        if (".git".Equals(item.Name))
+                        {
+                            continue;
+                        }
+                        ThreadPool.QueueUserWorkItem(new WaitCallback(Run), item.FullName);
                     }
                 }
             }
-            catch (Exception e) { Console.Error.WriteLine("查询异常: " + e.Message); }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine("查询异常: " + e.Message);
+            }
 
         }
         #endregion
@@ -322,35 +325,27 @@ namespace ContentQuery
                 this.labmess.Text += ".";
             }
             mcount++;
-            for (int i = 0; i < trr.Count; i++)
+            if (checkThreadPoolComplete())
             {
-                Thread t = trr[i];
-                try
+                this.timer1.Enabled = false;
+                this.labmess.Text = "";
+                this.labmess.Location = new Point(8, 105);
+                loadPanel(1);
+                if (list.Count == 0)
                 {
-                    if (t.ThreadState != System.Threading.ThreadState.Stopped)
-                    {
-                        break;
-                    }
+                    MessageBox.Show("没有找到相关的数据！");
                 }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine("线程异常: " + ex.Message);
-                }
-                if (i == trr.Count - 1)
-                {
-                    this.timer1.Enabled = false;
-                    this.labmess.Text = "";
-                    this.labmess.Location = new Point(8, 105);
-                    loadPanel(1);
-                    if (list.Count == 0)
-                    {
-                        MessageBox.Show("没有找到相关的数据！");
-                    }
-                    return;
-                }
+                return;
             }
+        }
 
-
+        private static bool checkThreadPoolComplete()
+        {
+            int maxWorkerThreads, workerThreads, portThreads;
+            ThreadPool.GetMaxThreads(out maxWorkerThreads, out portThreads);
+            ThreadPool.GetAvailableThreads(out workerThreads, out portThreads);
+            int count = maxWorkerThreads - workerThreads;
+            return count == 0;
         }
         #endregion
 
