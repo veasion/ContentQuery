@@ -17,8 +17,8 @@ namespace ContentQuery
         int count = 0;
         //文件Panel集合
         List<Panel> list = new List<Panel>();
-        //是否按内容查询
-        bool nrquery = true;
+        //搜索类型: 0 文件名和内容 1内容 2文件名
+        int searchType = 0;
         // 最大搜索文件(300M)
         int maxByte = 1024 * 1024 * 300;
         // 内容高度, 分页大小
@@ -29,6 +29,7 @@ namespace ContentQuery
             ThreadPool.SetMinThreads(3, 3);
             ThreadPool.SetMaxThreads(30, 100);
             InitializeComponent();
+            this.cbo_type.SelectedIndex = 0;
             string path = CacheHelper.getOtherText();
             if (path != null && !"".Equals(path) && Directory.Exists(path))
             {
@@ -43,6 +44,7 @@ namespace ContentQuery
         #region 检索按钮Click
         private void ButtonSearch_Click(object sender, EventArgs e)
         {
+            this.searchType = this.cbo_type.SelectedIndex;
             if (this.txtnr.Text.Trim().Equals("") || this.txtpath.Text.Trim().Equals(""))
             {
                 return;
@@ -64,15 +66,11 @@ namespace ContentQuery
             this.labmess.Text = "查询中，请稍后...";
             this.labmess.Location = new Point(80, (this.Height + 16) / 2);
 
-            if (reg.Trim().Equals(""))
-            {
-                nrquery = false;
-            }
-            else
+            if (!reg.Trim().Equals(""))
             {
                 reg = reg.Substring(1);
-                nrquery = true;
             }
+
             txtreg = reg;
 
             ThreadPool.QueueUserWorkItem(new WaitCallback(Run), this.txtpath.Text);
@@ -143,7 +141,7 @@ namespace ContentQuery
                         //文件名
                         string fname = item.Name;
                         //按内容查询
-                        if (nrquery)
+                        if (searchType == 0 || searchType == 1)
                         {
                             if (Regex.IsMatch(item.Extension, ".(" + txtreg + ")") && item.Length <= maxByte)
                             {
@@ -151,15 +149,15 @@ namespace ContentQuery
                                 if (has)
                                 {
                                     addPanel(fname, item.FullName);
+                                    continue;
                                 }
                             }
-                        } //按文件名查询
-                        else
+                        }
+                        //按文件名查询
+                        if ((searchType == 0 || searchType == 2) && fname.Contains(this.txtnr.Text.Trim()))
                         {
-                            if (fname.IndexOf(this.txtnr.Text.Trim()) != -1)
-                            {
-                                addPanel(fname, item.FullName);
-                            }
+                            addPanel(fname, item.FullName);
+                            continue;
                         }
                     }
                 }
@@ -225,15 +223,7 @@ namespace ContentQuery
             link.LinkClicked += new LinkLabelLinkClickedEventHandler(this.linkLabel_Open);
             link.Font = new Font("微软雅黑", 9);
             link.Location = new Point(left, top);
-
-            if (nrquery)
-            {
-                link.Text = "打开";
-            }
-            else
-            {
-                link.Text = "查看";
-            }
+            link.Text = "打开";
 
             p.Controls.Add(l);
             p.Controls.Add(t);
@@ -282,29 +272,11 @@ namespace ContentQuery
             {
                 if (c is TextBox)
                 {
-                    OpenAndSetWindow(c.Text.Substring(0, c.Text.LastIndexOf("\\")));
-                    if (nrquery)
-                    {
-                        Thread.Sleep(200);
-                        OpenAndSetWindow(c.Text);
-                    }
+                    Process.Start("explorer.exe", "/select," + c.Text);
                     break;
                 }
             }
 
-        }
-        #endregion
-
-        #region 打开文件方法
-        [System.Runtime.InteropServices.DllImportAttribute("user32.dll", EntryPoint = "MoveWindow")]
-        public static extern bool MoveWindow(System.IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
-        private void OpenAndSetWindow(String fileName)
-        {
-            Process p = new Process();
-            p.StartInfo.FileName = fileName;
-            p.StartInfo.CreateNoWindow = true;
-            p.StartInfo.WindowStyle = ProcessWindowStyle.Normal;
-            p.Start();
         }
         #endregion
 
@@ -354,13 +326,15 @@ namespace ContentQuery
         {
             string message = @"
                 自写格式：
-                    如果只加入一个后缀，直接填后缀名就行
-                    如：XML的文件，填 xml
-                    加入多个后缀是用 | 隔开，不能有空格
 
-                 按文件名查找：
-                    文件后缀什么都不填和不选就按文件名查询";
-            MessageBox.Show(message, "搜索帮助");
+                    根据指定后缀搜索文件内容
+
+                    多个后缀用 | 隔开，不能有空格
+
+                    如：pdf | pptx | xml | sql | java | vue
+                    
+                                             -- luozhuowei";
+            MessageBox.Show(message, "帮助");
         }
         #endregion
 

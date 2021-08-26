@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Packaging;
@@ -116,5 +117,59 @@ namespace ContentQuery
             }
             return true;
         }
+
+        public static int checkOffice()
+        {
+            int officeVersion = -1;
+
+            RegistryKey rk = Registry.LocalMachine;
+            RegistryKey akey07 = rk.OpenSubKey(@"SOFTWARE\Microsoft\Office\12.0\Excel\InstallRoot\");//查询2007
+            RegistryKey akey10 = rk.OpenSubKey(@"SOFTWARE\Microsoft\Office\14.0\Excel\InstallRoot\");//查询2010
+            RegistryKey akey13 = rk.OpenSubKey(@"SOFTWARE\Microsoft\Office\15.0\Excel\InstallRoot\");//查询2013
+            RegistryKey akey16 = rk.OpenSubKey(@"SOFTWARE\Microsoft\Office\16.0\Excel\InstallRoot\");//查询2016
+
+            //检查本机是否安装Office2007
+            if (akey07 != null)
+            {
+                string office07 = akey07.GetValue("Path").ToString();
+                if (File.Exists(office07 + "Excel.exe"))
+                {
+                    officeVersion = 2007;
+                }
+            }
+
+            //检查本机是否安装Office2010
+            if (akey10 != null)
+            {
+                string office10 = akey10.GetValue("Path").ToString();
+                if (File.Exists(office10 + "Excel.exe"))
+                {
+                    officeVersion = 2010;
+                }
+            }
+
+            //检查本机是否安装Office2013
+            if (akey13 != null)
+            {
+                string office13 = akey13.GetValue("Path").ToString();
+                if (File.Exists(office13 + "Excel.exe"))
+                {
+                    officeVersion = 2013;
+                }
+
+            }
+
+            //检查本机是否安装Office2016       
+            if (akey16 != null)
+            {
+                string office16 = akey16.GetValue("Path").ToString();
+                if (File.Exists(office16 + "Excel.exe"))
+                {
+                    officeVersion = 2016;
+                }
+            }
+            return officeVersion;
+        }
+
     }
 }

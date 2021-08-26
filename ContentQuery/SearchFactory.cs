@@ -21,6 +21,7 @@ namespace ContentQuery
         private static WordSearch wordSearch = new WordSearch();
         private static ExcelSearch excelSearch = new ExcelSearch();
         private static PptSearch pptSearch = new PptSearch();
+        private static PdfSearch pdfSearch = new PdfSearch();
 
         public static Search GetSearch(FileInfo fileInfo)
         {
@@ -44,6 +45,7 @@ namespace ContentQuery
                 case "xlsx": return excelSearch;
                 case "ppt": return pptSearch;
                 case "pptx": return pptSearch;
+                case "pdf": return pdfSearch;
             }
             return textSearch;
         }

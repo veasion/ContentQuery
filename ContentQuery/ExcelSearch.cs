@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace ContentQuery
@@ -19,14 +21,37 @@ namespace ContentQuery
                 }
                 return FileUtils.hasTextByPackage(fileInfo, text, "/xl/sharedStrings.xml");
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                string message = e.Message;
+                if (e.InnerException != null)
+                {
+                    message += "；" + e.InnerException.Message;
+                }
+                Console.Error.WriteLine("加载xls异常: " + message);
                 return false;
             }
         }
 
         private bool hasTextByOld(FileInfo fileInfo, string text)
         {
+            Assembly assem = SpireExtUtils.LoadFile("Spire.XLS.dll");
+            var type = assem.GetType("Spire.Xls.Workbook");
+            var obj = Activator.CreateInstance(type);
+            type.GetMethod("LoadFromFile", new Type[] { typeof(string) }).Invoke(obj, new string[] { fileInfo.FullName });
+            var sheets = type.GetProperty("Worksheets").GetValue(obj, null) as IEnumerable;
+            foreach (var sheet in sheets)
+            {
+                var range = sheet.GetType()
+                    .GetMethod("FindString", new Type[] { typeof(string), typeof(bool), typeof(bool) })
+                    .Invoke(sheet, new object[] { text, false, false });
+                if (range != null)
+                {
+                    type.GetMethod("Close").Invoke(obj, null);
+                    return true;
+                }
+            }
+            type.GetMethod("Close").Invoke(obj, null);
             return false;
         }
     }
