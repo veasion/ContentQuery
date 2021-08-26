@@ -11,18 +11,21 @@ namespace ContentQuery
 {
     public partial class QueryForm : Form
     {
+
+        // 是否正在搜索
+        static bool searching = false;
         //后缀
-        string txtreg = "";
+        static string txtreg = "";
         //查询的文件数量
-        int count = 0;
+        static int count = 0;
         //文件Panel集合
-        List<Panel> list = new List<Panel>();
+        static List<Panel> list = new List<Panel>();
         //搜索类型: 0 文件名和内容 1内容 2文件名
-        int searchType = 0;
+        static int searchType = 0;
         // 最大搜索文件(300M)
-        int maxByte = 1024 * 1024 * 300;
+        static int maxByte = 1024 * 1024 * 300;
         // 内容高度, 分页大小
-        int panelHeight = 60, pageSize = 5;
+        static int panelHeight = 60, pageSize = 5;
 
         public QueryForm()
         {
@@ -44,7 +47,20 @@ namespace ContentQuery
         #region 检索按钮Click
         private void ButtonSearch_Click(object sender, EventArgs e)
         {
-            this.searchType = this.cbo_type.SelectedIndex;
+            searching = true;
+            searchType = this.cbo_type.SelectedIndex;
+            if ("暂停".Equals(this.but_search.Text))
+            {
+                searching = false;
+                this.but_search.Text = "搜索";
+                this.but_search.Enabled = false;
+                this.timer_query.Enabled = false;
+                this.labmess.Text = "正在终止线程...";
+                Thread.Sleep(1000);
+                searchComplete();
+                this.but_search.Enabled = true;
+                return;
+            }
             if (this.txtnr.Text.Trim().Equals("") || this.txtpath.Text.Trim().Equals(""))
             {
                 return;
@@ -55,8 +71,8 @@ namespace ContentQuery
             count = 0;
             string reg = "";
             reg += this.cbotxt.Checked ? "|txt" : "";
-            reg += this.cbo_doc.Checked ? "|doc|docx" : "";
-            reg += this.cbo_xls.Checked ? "|xls|xlsx" : "";
+            reg += this.cbo_docx.Checked ? "|docx" : "";
+            reg += this.cbo_xlsx.Checked ? "|xlsx" : "";
             reg += this.cbo_md.Checked ? "|md" : "";
             string hz = this.txthz.Text.Trim();
             if (!hz.Equals(""))
@@ -75,7 +91,8 @@ namespace ContentQuery
 
             ThreadPool.QueueUserWorkItem(new WaitCallback(Run), this.txtpath.Text);
 
-            this.timer1.Enabled = true;
+            this.but_search.Text = "暂停";
+            this.timer_query.Enabled = true;
             CacheHelper.cacheOtherText(this.txtpath.Text);
         }
         #endregion
@@ -127,6 +144,11 @@ namespace ContentQuery
         #region 查询搜索逻辑代码--线程
         public void Run(object name)
         {
+            Console.WriteLine(searching + " > " + name);
+            if (!searching)
+            {
+                return;
+            }
             string path = name as string;
             //文件夹
             DirectoryInfo di = new DirectoryInfo(path);
@@ -138,6 +160,10 @@ namespace ContentQuery
                 {
                     foreach (FileInfo item in frr)
                     {
+                        if (!searching)
+                        {
+                            return;
+                        }
                         //文件名
                         string fname = item.Name;
                         //按内容查询
@@ -167,6 +193,10 @@ namespace ContentQuery
             {
                 Console.Error.WriteLine("查询异常: " + e.Message);
             }
+            if (!searching)
+            {
+                return;
+            }
             //获取所有文件夹
             try
             {
@@ -175,6 +205,10 @@ namespace ContentQuery
                 {
                     foreach (var item in drr)
                     {
+                        if (!searching)
+                        {
+                            return;
+                        }
                         if (".git".Equals(item.Name))
                         {
                             continue;
@@ -284,30 +318,37 @@ namespace ContentQuery
         int mcount = 0;
         private void timer1_Tick(object sender, EventArgs e)
         {
-            if (mcount == 1)
+            this.labjg.Text = "查找结果(" + list.Count + ")： 1/1";
+            if (mcount++ == 0)
             {
                 this.labmess.Text = "查询中，请稍后";
-            }
-            else if (mcount == 4)
-            {
-                mcount = 0;
             }
             else
             {
                 this.labmess.Text += ".";
             }
-            mcount++;
+            if (mcount == 4)
+            {
+                mcount = 0;
+            }
             if (checkThreadPoolComplete())
             {
-                this.timer1.Enabled = false;
-                this.labmess.Text = "";
-                this.labmess.Location = new Point(8, 105);
-                loadPanel(1);
-                if (list.Count == 0)
-                {
-                    MessageBox.Show("没有找到相关的数据！");
-                }
+                searchComplete();
                 return;
+            }
+        }
+
+        private void searchComplete()
+        {
+            searching = false;
+            this.but_search.Text = "搜索";
+            this.timer_query.Enabled = false;
+            this.labmess.Text = "";
+            this.labmess.Location = new Point(8, 105);
+            loadPanel(1);
+            if (list.Count == 0)
+            {
+                MessageBox.Show("没有找到相关的数据！");
             }
         }
 
@@ -317,6 +358,7 @@ namespace ContentQuery
             ThreadPool.GetMaxThreads(out maxWorkerThreads, out portThreads);
             ThreadPool.GetAvailableThreads(out workerThreads, out portThreads);
             int count = maxWorkerThreads - workerThreads;
+            Console.WriteLine("线程数: " + count);
             return count == 0;
         }
         #endregion
@@ -331,9 +373,9 @@ namespace ContentQuery
 
                     多个后缀用 | 隔开，不能有空格
 
-                    如：pdf | pptx | xml | sql | java | vue
+                    如: doc | xls | pdf | pptx | xml | sql | java | vue | js
                     
-                                             -- luozhuowei";
+                                                            -- luozhuowei";
             MessageBox.Show(message, "帮助");
         }
         #endregion

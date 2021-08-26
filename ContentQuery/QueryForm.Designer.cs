@@ -36,11 +36,11 @@
             this.txtnr = new System.Windows.Forms.TextBox();
             this.but_search = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.cbo_xls = new System.Windows.Forms.CheckBox();
+            this.cbo_xlsx = new System.Windows.Forms.CheckBox();
             this.linkLabel3 = new System.Windows.Forms.LinkLabel();
             this.txthz = new System.Windows.Forms.TextBox();
             this.cbo_md = new System.Windows.Forms.CheckBox();
-            this.cbo_doc = new System.Windows.Forms.CheckBox();
+            this.cbo_docx = new System.Windows.Forms.CheckBox();
             this.cbotxt = new System.Windows.Forms.CheckBox();
             this.panel1 = new System.Windows.Forms.Panel();
             this.pNr = new System.Windows.Forms.Panel();
@@ -48,7 +48,7 @@
             this.linkLabel2 = new System.Windows.Forms.LinkLabel();
             this.linkLabel1 = new System.Windows.Forms.LinkLabel();
             this.labjg = new System.Windows.Forms.Label();
-            this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.timer_query = new System.Windows.Forms.Timer(this.components);
             this.labmess = new System.Windows.Forms.Label();
             this.cbo_type = new System.Windows.Forms.ComboBox();
             this.groupBox1.SuspendLayout();
@@ -72,7 +72,7 @@
             this.txtpath.Location = new System.Drawing.Point(88, 13);
             this.txtpath.Name = "txtpath";
             this.txtpath.Size = new System.Drawing.Size(157, 22);
-            this.txtpath.TabIndex = 1;
+            this.txtpath.TabIndex = 5;
             this.txtpath.Text = "C:\\";
             // 
             // button1
@@ -81,7 +81,7 @@
             this.button1.Location = new System.Drawing.Point(262, 13);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(59, 23);
-            this.button1.TabIndex = 2;
+            this.button1.TabIndex = 5;
             this.button1.Text = "浏览";
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
@@ -107,11 +107,11 @@
             // 
             // groupBox1
             // 
-            this.groupBox1.Controls.Add(this.cbo_xls);
+            this.groupBox1.Controls.Add(this.cbo_xlsx);
             this.groupBox1.Controls.Add(this.linkLabel3);
             this.groupBox1.Controls.Add(this.txthz);
             this.groupBox1.Controls.Add(this.cbo_md);
-            this.groupBox1.Controls.Add(this.cbo_doc);
+            this.groupBox1.Controls.Add(this.cbo_docx);
             this.groupBox1.Controls.Add(this.cbotxt);
             this.groupBox1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.groupBox1.Location = new System.Drawing.Point(14, 85);
@@ -121,17 +121,17 @@
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "内容文件后缀";
             // 
-            // cbo_xls
+            // cbo_xlsx
             // 
-            this.cbo_xls.AutoSize = true;
-            this.cbo_xls.Checked = true;
-            this.cbo_xls.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cbo_xls.Location = new System.Drawing.Point(114, 19);
-            this.cbo_xls.Name = "cbo_xls";
-            this.cbo_xls.Size = new System.Drawing.Size(48, 21);
-            this.cbo_xls.TabIndex = 3;
-            this.cbo_xls.Text = "xlsx";
-            this.cbo_xls.UseVisualStyleBackColor = true;
+            this.cbo_xlsx.AutoSize = true;
+            this.cbo_xlsx.Checked = true;
+            this.cbo_xlsx.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.cbo_xlsx.Location = new System.Drawing.Point(114, 19);
+            this.cbo_xlsx.Name = "cbo_xlsx";
+            this.cbo_xlsx.Size = new System.Drawing.Size(48, 21);
+            this.cbo_xlsx.TabIndex = 8;
+            this.cbo_xlsx.Text = "xlsx";
+            this.cbo_xlsx.UseVisualStyleBackColor = true;
             // 
             // linkLabel3
             // 
@@ -153,8 +153,7 @@
             this.txthz.Location = new System.Drawing.Point(214, 18);
             this.txthz.Name = "txthz";
             this.txthz.Size = new System.Drawing.Size(81, 23);
-            this.txthz.TabIndex = 1;
-            this.txthz.Text = "java|vue|sql";
+            this.txthz.TabIndex = 3;
             // 
             // cbo_md
             // 
@@ -164,21 +163,21 @@
             this.cbo_md.Location = new System.Drawing.Point(162, 19);
             this.cbo_md.Name = "cbo_md";
             this.cbo_md.Size = new System.Drawing.Size(46, 21);
-            this.cbo_md.TabIndex = 0;
+            this.cbo_md.TabIndex = 9;
             this.cbo_md.Text = "md";
             this.cbo_md.UseVisualStyleBackColor = true;
             // 
-            // cbo_doc
+            // cbo_docx
             // 
-            this.cbo_doc.AutoSize = true;
-            this.cbo_doc.Checked = true;
-            this.cbo_doc.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cbo_doc.Location = new System.Drawing.Point(59, 19);
-            this.cbo_doc.Name = "cbo_doc";
-            this.cbo_doc.Size = new System.Drawing.Size(55, 21);
-            this.cbo_doc.TabIndex = 0;
-            this.cbo_doc.Text = "docx";
-            this.cbo_doc.UseVisualStyleBackColor = true;
+            this.cbo_docx.AutoSize = true;
+            this.cbo_docx.Checked = true;
+            this.cbo_docx.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.cbo_docx.Location = new System.Drawing.Point(59, 19);
+            this.cbo_docx.Name = "cbo_docx";
+            this.cbo_docx.Size = new System.Drawing.Size(55, 21);
+            this.cbo_docx.TabIndex = 7;
+            this.cbo_docx.Text = "docx";
+            this.cbo_docx.UseVisualStyleBackColor = true;
             // 
             // cbotxt
             // 
@@ -188,7 +187,7 @@
             this.cbotxt.Location = new System.Drawing.Point(15, 19);
             this.cbotxt.Name = "cbotxt";
             this.cbotxt.Size = new System.Drawing.Size(41, 21);
-            this.cbotxt.TabIndex = 0;
+            this.cbotxt.TabIndex = 6;
             this.cbotxt.Text = "txt";
             this.cbotxt.UseVisualStyleBackColor = true;
             // 
@@ -256,10 +255,10 @@
             this.labjg.TabIndex = 0;
             this.labjg.Text = "查找结果(0)： 1/1";
             // 
-            // timer1
+            // timer_query
             // 
-            this.timer1.Interval = 200;
-            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
+            this.timer_query.Interval = 200;
+            this.timer_query.Tick += new System.EventHandler(this.timer1_Tick);
             // 
             // labmess
             // 
@@ -283,7 +282,7 @@
             this.cbo_type.Location = new System.Drawing.Point(186, 48);
             this.cbo_type.Name = "cbo_type";
             this.cbo_type.Size = new System.Drawing.Size(84, 24);
-            this.cbo_type.TabIndex = 7;
+            this.cbo_type.TabIndex = 1;
             // 
             // QueryForm
             // 
@@ -328,7 +327,7 @@
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.TextBox txthz;
         private System.Windows.Forms.CheckBox cbo_md;
-        private System.Windows.Forms.CheckBox cbo_doc;
+        private System.Windows.Forms.CheckBox cbo_docx;
         private System.Windows.Forms.CheckBox cbotxt;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Panel pNr;
@@ -336,9 +335,9 @@
         private System.Windows.Forms.LinkLabel linkLabel2;
         private System.Windows.Forms.LinkLabel linkLabel1;
         private System.Windows.Forms.Label labjg;
-        private System.Windows.Forms.Timer timer1;
+        private System.Windows.Forms.Timer timer_query;
         private System.Windows.Forms.LinkLabel linkLabel3;
-        private System.Windows.Forms.CheckBox cbo_xls;
+        private System.Windows.Forms.CheckBox cbo_xlsx;
         private System.Windows.Forms.Label labmess;
         private System.Windows.Forms.ComboBox cbo_type;
     }
