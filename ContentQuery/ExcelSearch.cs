@@ -10,7 +10,7 @@ namespace ContentQuery
     {
         public bool hasText(FileInfo fileInfo, string text)
         {
-            return false;
+            return FileUtils.hasTextByWordExcel(fileInfo, text);
         }
     }
 }

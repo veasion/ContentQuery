@@ -26,17 +26,32 @@ namespace ContentQuery
         List<Thread> trr = new List<Thread>();
         //是否按内容查询
         bool nrquery = true;
+        // 最大搜索文件(300M)
+        int maxByte = 1024 * 1024 * 300;
+        // 内容高度, 分页大小
+        int panelHeight = 60, pageSize = 5;
 
         public QueryForm()
         {
             InitializeComponent();
-            this.txtpath.Text = Directory.GetCurrentDirectory();
+            string path = CacheHelper.getOtherText();
+            if (path != null && !"".Equals(path) && Directory.Exists(path))
+            {
+                this.txtpath.Text = path;
+            }
+            else
+            {
+                this.txtpath.Text = Directory.GetCurrentDirectory();
+            }
         }
 
         #region 检索按钮Click
-        private void button2_Click(object sender, EventArgs e)
+        private void ButtonSearch_Click(object sender, EventArgs e)
         {
-            if (this.txtnr.Text.Trim().Equals("") || this.txtpath.Text.Trim().Equals("")) return;
+            if (this.txtnr.Text.Trim().Equals("") || this.txtpath.Text.Trim().Equals(""))
+            {
+                return;
+            }
             list.Clear();
             trr.Clear();
             this.pNr.Controls.Clear();
@@ -51,8 +66,8 @@ namespace ContentQuery
             {
                 reg += "|" + hz;
             }
-            this.labmess.Location = new Point(60, 240);
             this.labmess.Text = "查询中，请稍后...";
+            this.labmess.Location = new Point(80, (this.Height + 16) / 2);
 
             if (reg.Trim().Equals(""))
             {
@@ -68,6 +83,7 @@ namespace ContentQuery
             trr.Add(t);
             t.Start(this.txtpath.Text);
             this.timer1.Enabled = true;
+            CacheHelper.cacheOtherText(this.txtpath.Text);
         }
         #endregion
 
@@ -134,7 +150,7 @@ namespace ContentQuery
                         //按内容查询
                         if (nrquery)
                         {
-                            if (Regex.IsMatch(item.Extension, ".(" + txtreg + ")") && item.Length < 1024 * 10)
+                            if (Regex.IsMatch(item.Extension, ".(" + txtreg + ")") && item.Length <= maxByte)
                             {
                                 bool has = SearchFactory.GetSearch(item).hasText(item, this.txtnr.Text.Trim());
                                 if (has)
@@ -177,26 +193,35 @@ namespace ContentQuery
         #region 创建文件到Panel
         private void addPanel(string fname, string fullname)
         {
+            int left = 20, top = 6;
             Panel p = new Panel();
-            p.Width = 300; p.Height = 65;
+            p.Width = this.panel1.Width - 2;
+            p.Height = panelHeight;
+            // p.BorderStyle = BorderStyle.FixedSingle;
 
             Label l = new Label();
-            l.Text = (++count) + ": " + fname;
-            l.Location = new Point(14, 8);
+            l.Text = fname;
+            l.Location = new Point(left, top);
             l.Font = new Font("微软雅黑", 10);
             l.AutoSize = true;
 
+            left += 28; top += 22;
+
             TextBox t = new TextBox();
-            t.Width = 187; t.Height = 23;
-            t.Location = new Point(46, 29);
+            t.Width = 220;
+            t.Height = 23;
+            t.Location = new Point(left, top);
             t.Font = new Font("微软雅黑", 9);
             t.ReadOnly = true;
             t.Text = fullname;
 
+            left += t.Width + 10;
+            top += 4;
+
             LinkLabel link = new LinkLabel();
             link.LinkClicked += new LinkLabelLinkClickedEventHandler(this.linkLabel_Open);
             link.Font = new Font("微软雅黑", 9);
-            link.Location = new Point(240, 32);
+            link.Location = new Point(left, top);
 
             if (nrquery)
             {
@@ -210,27 +235,34 @@ namespace ContentQuery
             p.Controls.Add(l);
             p.Controls.Add(t);
             p.Controls.Add(link);
-            list.Add(p);
+            lock (list)
+            {
+                l.Text = (++count) + "： " + fname;
+                list.Add(p);
+            }
         }
         #endregion
 
         #region 按页显示Panel
         private void loadPanel(int page)
         {
-            int countp = 1;
-            if (count % 4 == 0)
+            int countp;
+            if (count % pageSize == 0)
             {
-                countp = count / 4;
+                countp = count / pageSize;
             }
-            else countp = count / 4 + 1;
+            else
+            {
+                countp = count / pageSize + 1;
+            }
             this.labjg.Text = "查找结果(" + count + ")： " + page + "/" + countp;
-            int i = (page - 1) * 4;
+            int i = (page - 1) * pageSize;
             for (int j = 0; i < list.Count; i++, j++)
             {
                 Panel p = list[i];
-                p.Location = new Point(0, 65 * j);
+                p.Location = new Point(0, panelHeight * j);
                 this.pNr.Controls.Add(p);
-                if (j == 3)
+                if (j == pageSize - 1)
                 {
                     break;
                 }
@@ -250,7 +282,7 @@ namespace ContentQuery
                     OpenAndSetWindow(c.Text.Substring(0, c.Text.LastIndexOf("\\")));
                     if (nrquery)
                     {
-                        Thread.Sleep(100);
+                        Thread.Sleep(200);
                         OpenAndSetWindow(c.Text);
                     }
                     break;
@@ -270,11 +302,6 @@ namespace ContentQuery
             p.StartInfo.CreateNoWindow = true;
             p.StartInfo.WindowStyle = ProcessWindowStyle.Normal;
             p.Start();
-            new Thread(() =>
-            {
-                Thread.Sleep(1000);
-
-            }).Start();
         }
         #endregion
 
@@ -305,12 +332,15 @@ namespace ContentQuery
                         break;
                     }
                 }
-                catch (Exception ex) { Console.Error.WriteLine("线程异常: " + ex.Message); }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine("线程异常: " + ex.Message);
+                }
                 if (i == trr.Count - 1)
                 {
                     this.timer1.Enabled = false;
                     this.labmess.Text = "";
-                    this.labmess.Location = new Point(304, 50);
+                    this.labmess.Location = new Point(8, 105);
                     loadPanel(1);
                     if (list.Count == 0)
                     {
@@ -327,24 +357,16 @@ namespace ContentQuery
         #region 帮助
         private void linkLabel3_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            string me = @"
-                文件后缀:
-                    顾名思义,就是按文件的后缀名查询,
-                    你可以在复选框中勾选，
-                    也可以在右边的文本框中自写
-
+            string message = @"
                 自写格式：
-                    如果只加入一个后缀，直接填后缀名就行，
-                    如：XML的文件，填xml，
+                    如果只加入一个后缀，直接填后缀名就行
+                    如：XML的文件，填 xml
                     加入多个后缀是用 | 隔开，不能有空格
 
                  按文件名查找：
-                    文件后缀什么都不填和不选就按文件名查询。";
-
-
-            MessageBox.Show(me, "文件后缀-帮助");
+                    文件后缀什么都不填和不选就按文件名查询";
+            MessageBox.Show(message, "搜索帮助");
         }
-
         #endregion
 
 

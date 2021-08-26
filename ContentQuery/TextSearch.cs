@@ -15,26 +15,7 @@ namespace ContentQuery
 
         public static bool hasTextIgnoreEncoding(FileInfo fileInfo, string text)
         {
-            bool has = hasText(fileInfo, text, Encoding.UTF8);
-            if (!has)
-            {
-                has = hasText(fileInfo, text, Encoding.ASCII);
-            }
-            return has;
-        }
-
-        public static bool hasText(FileInfo fileInfo, string text, Encoding encoding)
-        {
-            string line;
-            StreamReader sr = new StreamReader(fileInfo.FullName, encoding);
-            while ((line = sr.ReadLine()) != null)
-            {
-                if (line.IndexOf(text) != -1)
-                {
-                    return true;
-                }
-            }
-            return false;
+            return FileUtils.hasText(fileInfo, text, FileUtils.GetFileEncodeType(fileInfo.FullName));
         }
     }
 }

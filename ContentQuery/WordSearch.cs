@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Packaging;
 using System.Linq;
 using System.Text;
+using System.Xml;
 
 namespace ContentQuery
 {
@@ -10,7 +12,7 @@ namespace ContentQuery
     {
         public bool hasText(FileInfo fileInfo, string text)
         {
-            return false;
+            return FileUtils.hasTextByWordExcel(fileInfo, text);
         }
     }
 }

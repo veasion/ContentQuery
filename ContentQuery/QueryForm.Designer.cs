@@ -35,8 +35,9 @@
             this.button1 = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
             this.txtnr = new System.Windows.Forms.TextBox();
-            this.button2 = new System.Windows.Forms.Button();
+            this.but_search = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.cbo_xls = new System.Windows.Forms.CheckBox();
             this.linkLabel3 = new System.Windows.Forms.LinkLabel();
             this.txthz = new System.Windows.Forms.TextBox();
             this.cbo_md = new System.Windows.Forms.CheckBox();
@@ -58,17 +59,17 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(13, 14);
+            this.label1.Location = new System.Drawing.Point(31, 14);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(80, 17);
+            this.label1.Size = new System.Drawing.Size(56, 17);
             this.label1.TabIndex = 0;
-            this.label1.Text = "所在文件夹：";
+            this.label1.Text = "文件夹：";
             // 
             // txtpath
             // 
             this.txtpath.BackColor = System.Drawing.SystemColors.Control;
             this.txtpath.Font = new System.Drawing.Font("微软雅黑", 8F);
-            this.txtpath.Location = new System.Drawing.Point(91, 13);
+            this.txtpath.Location = new System.Drawing.Point(92, 13);
             this.txtpath.Name = "txtpath";
             this.txtpath.Size = new System.Drawing.Size(157, 22);
             this.txtpath.TabIndex = 1;
@@ -77,9 +78,9 @@
             // button1
             // 
             this.button1.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.button1.Location = new System.Drawing.Point(264, 11);
+            this.button1.Location = new System.Drawing.Point(266, 13);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(55, 23);
+            this.button1.Size = new System.Drawing.Size(59, 23);
             this.button1.TabIndex = 2;
             this.button1.Text = "浏览";
             this.button1.UseVisualStyleBackColor = true;
@@ -88,7 +89,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(13, 58);
+            this.label2.Location = new System.Drawing.Point(41, 56);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(44, 17);
             this.label2.TabIndex = 0;
@@ -97,43 +98,56 @@
             // txtnr
             // 
             this.txtnr.BackColor = System.Drawing.Color.WhiteSmoke;
-            this.txtnr.Location = new System.Drawing.Point(63, 55);
+            this.txtnr.Location = new System.Drawing.Point(91, 53);
             this.txtnr.Name = "txtnr";
-            this.txtnr.Size = new System.Drawing.Size(141, 23);
+            this.txtnr.Size = new System.Drawing.Size(158, 23);
             this.txtnr.TabIndex = 0;
             // 
-            // button2
+            // but_search
             // 
-            this.button2.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.button2.Location = new System.Drawing.Point(221, 50);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(59, 31);
-            this.button2.TabIndex = 2;
-            this.button2.Text = "检索";
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.button2_Click);
+            this.but_search.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.but_search.Location = new System.Drawing.Point(266, 48);
+            this.but_search.Name = "but_search";
+            this.but_search.Size = new System.Drawing.Size(59, 31);
+            this.but_search.TabIndex = 2;
+            this.but_search.Text = "搜索";
+            this.but_search.UseVisualStyleBackColor = true;
+            this.but_search.Click += new System.EventHandler(this.ButtonSearch_Click);
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.cbo_xls);
             this.groupBox1.Controls.Add(this.linkLabel3);
             this.groupBox1.Controls.Add(this.txthz);
             this.groupBox1.Controls.Add(this.cbo_md);
             this.groupBox1.Controls.Add(this.cbo_doc);
             this.groupBox1.Controls.Add(this.cbotxt);
             this.groupBox1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.groupBox1.Location = new System.Drawing.Point(16, 87);
+            this.groupBox1.Location = new System.Drawing.Point(14, 85);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(303, 47);
+            this.groupBox1.Size = new System.Drawing.Size(345, 47);
             this.groupBox1.TabIndex = 4;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "文件后缀";
+            // 
+            // cbo_xls
+            // 
+            this.cbo_xls.AutoSize = true;
+            this.cbo_xls.Checked = true;
+            this.cbo_xls.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.cbo_xls.Location = new System.Drawing.Point(114, 19);
+            this.cbo_xls.Name = "cbo_xls";
+            this.cbo_xls.Size = new System.Drawing.Size(42, 21);
+            this.cbo_xls.TabIndex = 3;
+            this.cbo_xls.Text = "xls";
+            this.cbo_xls.UseVisualStyleBackColor = true;
             // 
             // linkLabel3
             // 
             this.linkLabel3.AutoSize = true;
             this.linkLabel3.Cursor = System.Windows.Forms.Cursors.Help;
             this.linkLabel3.LinkColor = System.Drawing.Color.Maroon;
-            this.linkLabel3.Location = new System.Drawing.Point(261, 21);
+            this.linkLabel3.Location = new System.Drawing.Point(298, 21);
             this.linkLabel3.Name = "linkLabel3";
             this.linkLabel3.Size = new System.Drawing.Size(32, 17);
             this.linkLabel3.TabIndex = 2;
@@ -145,9 +159,9 @@
             // 
             this.txthz.BackColor = System.Drawing.SystemColors.Control;
             this.txthz.Font = new System.Drawing.Font("微软雅黑", 8F);
-            this.txthz.Location = new System.Drawing.Point(179, 18);
+            this.txthz.Location = new System.Drawing.Point(217, 18);
             this.txthz.Name = "txthz";
-            this.txthz.Size = new System.Drawing.Size(69, 22);
+            this.txthz.Size = new System.Drawing.Size(78, 22);
             this.txthz.TabIndex = 1;
             // 
             // cbo_md
@@ -155,7 +169,7 @@
             this.cbo_md.AutoSize = true;
             this.cbo_md.Checked = true;
             this.cbo_md.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cbo_md.Location = new System.Drawing.Point(121, 19);
+            this.cbo_md.Location = new System.Drawing.Point(162, 19);
             this.cbo_md.Name = "cbo_md";
             this.cbo_md.Size = new System.Drawing.Size(46, 21);
             this.cbo_md.TabIndex = 0;
@@ -167,7 +181,7 @@
             this.cbo_doc.AutoSize = true;
             this.cbo_doc.Checked = true;
             this.cbo_doc.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cbo_doc.Location = new System.Drawing.Point(67, 19);
+            this.cbo_doc.Location = new System.Drawing.Point(63, 19);
             this.cbo_doc.Name = "cbo_doc";
             this.cbo_doc.Size = new System.Drawing.Size(49, 21);
             this.cbo_doc.TabIndex = 0;
@@ -179,7 +193,7 @@
             this.cbotxt.AutoSize = true;
             this.cbotxt.Checked = true;
             this.cbotxt.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cbotxt.Location = new System.Drawing.Point(18, 19);
+            this.cbotxt.Location = new System.Drawing.Point(15, 19);
             this.cbotxt.Name = "cbotxt";
             this.cbotxt.Size = new System.Drawing.Size(41, 21);
             this.cbotxt.TabIndex = 0;
@@ -191,18 +205,17 @@
             this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.panel1.Controls.Add(this.pNr);
             this.panel1.Controls.Add(this.panel2);
-            this.panel1.Location = new System.Drawing.Point(13, 140);
+            this.panel1.Location = new System.Drawing.Point(12, 140);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(312, 328);
+            this.panel1.Size = new System.Drawing.Size(348, 339);
             this.panel1.TabIndex = 5;
             // 
             // pNr
             // 
-            this.pNr.AutoScroll = true;
             this.pNr.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pNr.Location = new System.Drawing.Point(0, 35);
             this.pNr.Name = "pNr";
-            this.pNr.Size = new System.Drawing.Size(310, 291);
+            this.pNr.Size = new System.Drawing.Size(346, 302);
             this.pNr.TabIndex = 1;
             // 
             // panel2
@@ -213,7 +226,7 @@
             this.panel2.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel2.Location = new System.Drawing.Point(0, 0);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(310, 35);
+            this.panel2.Size = new System.Drawing.Size(346, 35);
             this.panel2.TabIndex = 0;
             // 
             // linkLabel2
@@ -221,7 +234,7 @@
             this.linkLabel2.AutoSize = true;
             this.linkLabel2.Cursor = System.Windows.Forms.Cursors.Hand;
             this.linkLabel2.LinkColor = System.Drawing.Color.Navy;
-            this.linkLabel2.Location = new System.Drawing.Point(242, 11);
+            this.linkLabel2.Location = new System.Drawing.Point(283, 10);
             this.linkLabel2.Name = "linkLabel2";
             this.linkLabel2.Size = new System.Drawing.Size(44, 17);
             this.linkLabel2.TabIndex = 1;
@@ -234,7 +247,7 @@
             this.linkLabel1.AutoSize = true;
             this.linkLabel1.Cursor = System.Windows.Forms.Cursors.Hand;
             this.linkLabel1.LinkColor = System.Drawing.Color.Navy;
-            this.linkLabel1.Location = new System.Drawing.Point(182, 11);
+            this.linkLabel1.Location = new System.Drawing.Point(223, 10);
             this.linkLabel1.Name = "linkLabel1";
             this.linkLabel1.Size = new System.Drawing.Size(44, 17);
             this.linkLabel1.TabIndex = 1;
@@ -245,7 +258,7 @@
             // labjg
             // 
             this.labjg.AutoSize = true;
-            this.labjg.Location = new System.Drawing.Point(5, 10);
+            this.labjg.Location = new System.Drawing.Point(9, 9);
             this.labjg.Name = "labjg";
             this.labjg.Size = new System.Drawing.Size(106, 17);
             this.labjg.TabIndex = 0;
@@ -261,7 +274,7 @@
             this.labmess.AutoSize = true;
             this.labmess.Font = new System.Drawing.Font("楷体", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.labmess.ForeColor = System.Drawing.Color.Maroon;
-            this.labmess.Location = new System.Drawing.Point(304, 50);
+            this.labmess.Location = new System.Drawing.Point(8, 105);
             this.labmess.Name = "labmess";
             this.labmess.Size = new System.Drawing.Size(0, 21);
             this.labmess.TabIndex = 6;
@@ -271,12 +284,12 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
-            this.ClientSize = new System.Drawing.Size(340, 472);
+            this.ClientSize = new System.Drawing.Size(372, 487);
             this.Controls.Add(this.labmess);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.txtnr);
-            this.Controls.Add(this.button2);
+            this.Controls.Add(this.but_search);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.txtpath);
             this.Controls.Add(this.label2);
@@ -306,7 +319,7 @@
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TextBox txtnr;
-        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Button but_search;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.TextBox txthz;
         private System.Windows.Forms.CheckBox cbo_md;
@@ -319,8 +332,9 @@
         private System.Windows.Forms.LinkLabel linkLabel1;
         private System.Windows.Forms.Label labjg;
         private System.Windows.Forms.Timer timer1;
-        private System.Windows.Forms.Label labmess;
         private System.Windows.Forms.LinkLabel linkLabel3;
+        private System.Windows.Forms.CheckBox cbo_xls;
+        private System.Windows.Forms.Label labmess;
     }
 }
 
