@@ -36,6 +36,7 @@ namespace ContentQuery
         private bool hasTextByOld(FileInfo fileInfo, string text)
         {
             Assembly assem = SpireExtUtils.LoadFile("Spire.XLS.dll");
+            if (assem == null) return false;
             var type = assem.GetType("Spire.Xls.Workbook");
             var obj = Activator.CreateInstance(type);
             try

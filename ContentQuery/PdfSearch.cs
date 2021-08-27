@@ -15,6 +15,7 @@ namespace ContentQuery
             try
             {
                 Assembly assem = SpireExtUtils.LoadFile("Spire.Pdf.dll");
+                if (assem == null) return false;
                 var type = assem.GetType("Spire.Pdf.PdfDocument");
                 var obj = Activator.CreateInstance(type);
                 try

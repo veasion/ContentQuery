@@ -244,7 +244,7 @@ namespace ContentQuery
                 //按内容查询
                 if (searchType == 0 || searchType == 1)
                 {
-                    if ((suffixStr == "*" || suffixStr.Contains("|" + item.Extension.Substring(1) + "|")) && item.Length <= maxByte)
+                    if (item.Length <= maxByte && (suffixStr == "*" || (item.Extension.Length > 1 && suffixStr.Contains("|" + item.Extension.Substring(1) + "|"))))
                     {
                         Console.WriteLine("正在搜索: " + item.FullName);
                         bool has = SearchFactory.GetSearch(item).hasText(item, this.txtnr.Text.Trim());

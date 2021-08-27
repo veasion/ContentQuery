@@ -20,19 +20,12 @@ namespace ContentQuery
 
         public static void check()
         {
-            if (File.Exists(currentDirectory + "\\Spire.Doc.dll") &&
-                File.Exists(currentDirectory + "\\Spire.XLS.dll") &&
-                File.Exists(currentDirectory + "\\Spire.Pdf.dll"))
+            new Thread(() =>
             {
-                return;
-            }
-            Thread thread = new Thread(() =>
-            {
-                LoadFile("Spire.Doc.dll");
-                LoadFile("Spire.XLS.dll");
-                LoadFile("Spire.Pdf.dll");
-            });
-            thread.Start();
+                LoadSpireFile("Spire.Doc.dll");
+                LoadSpireFile("Spire.XLS.dll");
+                LoadSpireFile("Spire.Pdf.dll");
+            }).Start();
         }
 
         public static Assembly LoadFile(string dll)
@@ -41,30 +34,36 @@ namespace ContentQuery
             {
                 return dllMap[dll];
             }
-            lock (dllMap)
+            return null;
+        }
+
+        private static Assembly LoadSpireFile(string dll)
+        {
+            if (dllMap.ContainsKey(dll))
             {
-                if (dllMap.ContainsKey(dll))
-                {
-                    return dllMap[dll];
-                }
-                if (!loaded)
-                {
-                    loaded = true;
-                    LoadFile(licenseDll);
-                }
-                string path = currentDirectory + "\\" + dll;
-                if (!File.Exists(path))
-                {
-                    // 下载dll
-                    downloadFile(downloadUrl + dll, path);
-                }
-                Assembly assembly = Assembly.LoadFile(path);
-                if (assembly != null)
-                {
-                    dllMap.Add(dll, assembly);
-                }
-                return assembly;
+                return dllMap[dll];
             }
+            if (dllMap.ContainsKey(dll))
+            {
+                return dllMap[dll];
+            }
+            if (!loaded)
+            {
+                loaded = true;
+                LoadSpireFile(licenseDll);
+            }
+            string path = currentDirectory + "\\" + dll;
+            if (!File.Exists(path))
+            {
+                // 下载dll
+                downloadFile(downloadUrl + dll, path);
+            }
+            Assembly assembly = Assembly.LoadFile(path);
+            if (assembly != null)
+            {
+                dllMap.Add(dll, assembly);
+            }
+            return assembly;
         }
 
         public static bool downloadFile(string url, string path)

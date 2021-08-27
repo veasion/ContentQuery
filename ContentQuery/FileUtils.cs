@@ -63,6 +63,11 @@ namespace ContentQuery
                 BinaryReader br = new BinaryReader(fs);
                 int length;
                 int.TryParse(fs.Length.ToString(), out length);
+                if (length == 0 || length < 3)
+                {
+                    br.Close();
+                    return Encoding.UTF8;
+                }
                 byte[] buffer = br.ReadBytes(length);
                 if (buffer[0] == UnicodeBIG[0] && buffer[1] == UnicodeBIG[1] && buffer[2] == UnicodeBIG[2])
                 {
