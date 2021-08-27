@@ -20,11 +20,19 @@ namespace ContentQuery
 
         public static void check()
         {
+            if (!File.Exists(currentDirectory + "\\ContentQuery.exe"))
+            {
+                return;
+            }
             new Thread(() =>
             {
-                LoadSpireFile("Spire.Doc.dll");
-                LoadSpireFile("Spire.XLS.dll");
-                LoadSpireFile("Spire.Pdf.dll");
+                try
+                {
+                    LoadSpireFile("Spire.Doc.dll");
+                    LoadSpireFile("Spire.XLS.dll");
+                    LoadSpireFile("Spire.Pdf.dll");
+                }
+                catch (Exception) { }
             }).Start();
         }
 
