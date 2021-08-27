@@ -52,6 +52,7 @@ namespace ContentQuery
             {
                 this.txtpath.Text = Directory.GetCurrentDirectory();
             }
+            SpireExtUtils.check();
         }
 
         #region 检索按钮Click

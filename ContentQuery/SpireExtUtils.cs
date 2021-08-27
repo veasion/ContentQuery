@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 
 namespace ContentQuery
 {
@@ -16,6 +17,23 @@ namespace ContentQuery
         private static string currentDirectory = Directory.GetCurrentDirectory();
         private static string downloadUrl = "https://veasion-oss.oss-cn-shanghai.aliyuncs.com/dll/";
         private static Dictionary<string, Assembly> dllMap = new Dictionary<string, Assembly>();
+
+        public static void check()
+        {
+            if (File.Exists(currentDirectory + "\\Spire.Doc.dll") &&
+                File.Exists(currentDirectory + "\\Spire.XLS.dll") &&
+                File.Exists(currentDirectory + "\\Spire.Pdf.dll"))
+            {
+                return;
+            }
+            Thread thread = new Thread(() =>
+            {
+                LoadFile("Spire.Doc.dll");
+                LoadFile("Spire.XLS.dll");
+                LoadFile("Spire.Pdf.dll");
+            });
+            thread.Start();
+        }
 
         public static Assembly LoadFile(string dll)
         {
