@@ -15,21 +15,38 @@ namespace ContentQuery
         private static string licenseDll = "Spire.License.dll";
         private static string currentDirectory = Directory.GetCurrentDirectory();
         private static string downloadUrl = "https://veasion-oss.oss-cn-shanghai.aliyuncs.com/dll/";
+        private static Dictionary<string, Assembly> dllMap = new Dictionary<string, Assembly>();
 
         public static Assembly LoadFile(string dll)
         {
-            if (!loaded)
+            if (dllMap.ContainsKey(dll))
             {
-                loaded = true;
-                LoadFile(licenseDll);
+                return dllMap[dll];
             }
-            string path = currentDirectory + "\\" + dll;
-            if (!File.Exists(path))
+            lock (dllMap)
             {
-                // 下载dll
-                downloadFile(downloadUrl + dll, path);
+                if (dllMap.ContainsKey(dll))
+                {
+                    return dllMap[dll];
+                }
+                if (!loaded)
+                {
+                    loaded = true;
+                    LoadFile(licenseDll);
+                }
+                string path = currentDirectory + "\\" + dll;
+                if (!File.Exists(path))
+                {
+                    // 下载dll
+                    downloadFile(downloadUrl + dll, path);
+                }
+                Assembly assembly = Assembly.LoadFile(path);
+                if (assembly != null)
+                {
+                    dllMap.Add(dll, assembly);
+                }
+                return assembly;
             }
-            return Assembly.LoadFile(path);
         }
 
         public static bool downloadFile(string url, string path)

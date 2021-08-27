@@ -17,19 +17,28 @@ namespace ContentQuery
                 Assembly assem = SpireExtUtils.LoadFile("Spire.Pdf.dll");
                 var type = assem.GetType("Spire.Pdf.PdfDocument");
                 var obj = Activator.CreateInstance(type);
-                type.GetMethod("LoadFromFile", new Type[] { typeof(string) }).Invoke(obj, new string[] { fileInfo.FullName });
-                var pages = type.GetProperty("Pages").GetValue(obj, null) as IEnumerable;
-                foreach (var page in pages)
+                try
                 {
-                    string context = page.GetType().GetMethod("ExtractText", new Type[] { }).Invoke(page, null) as string;
-                    if (context != null && context.Contains(text))
+                    type.GetMethod("LoadFromFile", new Type[] { typeof(string) }).Invoke(obj, new string[] { fileInfo.FullName });
+                    var pages = type.GetProperty("Pages").GetValue(obj, null) as IEnumerable;
+                    if (pages == null)
                     {
-                        type.GetMethod("Close").Invoke(obj, null);
-                        return true;
+                        return false;
                     }
+                    foreach (var page in pages)
+                    {
+                        string context = page.GetType().GetMethod("ExtractText", new Type[] { }).Invoke(page, null) as string;
+                        if (context != null && context.Contains(text))
+                        {
+                            return true;
+                        }
+                    }
+                    return false;
                 }
-                type.GetMethod("Close").Invoke(obj, null);
-                return false;
+                finally
+                {
+                    type.GetMethod("Close").Invoke(obj, null);
+                }
             }
             catch (Exception e)
             {
@@ -38,7 +47,7 @@ namespace ContentQuery
                 {
                     message += "；" + e.InnerException.Message;
                 }
-                Console.Error.WriteLine("加载pdf异常: " + message);
+                Console.Error.WriteLine("加载pdf异常: " + message + " > " + fileInfo.FullName);
                 return false;
             }
         }

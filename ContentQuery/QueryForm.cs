@@ -17,7 +17,7 @@ namespace ContentQuery
         //后缀
         static string txtreg = "";
         //查询的文件数量
-        static int count = 0;
+        static int searchCount = 0;
         //文件Panel集合
         static List<Panel> list = new List<Panel>();
         //搜索类型: 0 文件名和内容 1内容 2文件名
@@ -25,12 +25,18 @@ namespace ContentQuery
         // 最大搜索文件(300M)
         static int maxByte = 1024 * 1024 * 300;
         // 内容高度, 分页大小
-        static int panelHeight = 60, pageSize = 5;
+        static int panelHeight = 60, pageIndex = 1, pageSize = 5;
+        // 支持搜索中实时展示
+        static bool searchShow = false;
+        // 多少个文件一个线程
+        const int maxFileToThread = 10;
+        // 总共扫描文件数
+        static int searchFileCount = 0;
 
         public QueryForm()
         {
-            ThreadPool.SetMinThreads(3, 3);
-            ThreadPool.SetMaxThreads(30, 100);
+            ThreadPool.SetMinThreads(5, 5);
+            ThreadPool.SetMaxThreads(50, 100);
             InitializeComponent();
             this.cbo_type.SelectedIndex = 0;
             string path = CacheHelper.getOtherText();
@@ -48,6 +54,7 @@ namespace ContentQuery
         private void ButtonSearch_Click(object sender, EventArgs e)
         {
             searching = true;
+            searchShow = false;
             searchType = this.cbo_type.SelectedIndex;
             if ("暂停".Equals(this.but_search.Text))
             {
@@ -55,7 +62,14 @@ namespace ContentQuery
                 this.but_search.Text = "搜索";
                 this.but_search.Enabled = false;
                 this.timer_query.Enabled = false;
-                this.labmess.Text = "正在终止线程...";
+                if (this.pNr.Controls.Count > 0)
+                {
+                    this.Text = "正在终止线程...";
+                }
+                else
+                {
+                    this.labmess.Text = "正在终止线程...";
+                }
                 Thread.Sleep(1000);
                 searchComplete();
                 this.but_search.Enabled = true;
@@ -67,8 +81,10 @@ namespace ContentQuery
             }
             list.Clear();
             this.pNr.Controls.Clear();
+            searchFileCount = 0;
             this.labjg.Text = "查找结果(0)： 1/1";
-            count = 0;
+            mcount = 0;
+            searchCount = 0;
             string reg = "";
             reg += this.cbotxt.Checked ? "|txt" : "";
             reg += this.cbo_docx.Checked ? "|docx" : "";
@@ -79,8 +95,10 @@ namespace ContentQuery
             {
                 reg += "|" + hz;
             }
+
             this.labmess.Text = "查询中，请稍后...";
-            this.labmess.Location = new Point(80, (this.Height + 16) / 2);
+            this.labmess.Location = new Point(60, (this.Height + 16) / 2);
+            this.labmess.Visible = true;
 
             if (!reg.Trim().Equals(""))
             {
@@ -102,26 +120,13 @@ namespace ContentQuery
         {
             LinkLabel link = (LinkLabel)sender;
             string txt = link.Text;
-            string str = this.labjg.Text;
-            int f = str.LastIndexOf("：");
-            int x = str.LastIndexOf("/");
-            int page = int.Parse(str.Substring(f + 1, x - f - 1).Trim());
-            int countp = int.Parse(str.Substring(x + 1).Trim());
             if (txt.Equals("上一页"))
             {
-                if (page > 1)
-                {
-                    this.pNr.Controls.Clear();
-                    this.loadPanel(page - 1);
-                }
+                this.loadPanel(pageIndex - 1);
             }
             else
             {
-                if (page < countp)
-                {
-                    this.pNr.Controls.Clear();
-                    this.loadPanel(page + 1);
-                }
+                this.loadPanel(pageIndex + 1);
             }
         }
         #endregion
@@ -144,7 +149,7 @@ namespace ContentQuery
         #region 查询搜索逻辑代码--线程
         public void Run(object name)
         {
-            Console.WriteLine(searching + " > " + name);
+            Console.WriteLine("正在搜索: " + name);
             if (!searching)
             {
                 return;
@@ -152,42 +157,14 @@ namespace ContentQuery
             string path = name as string;
             //文件夹
             DirectoryInfo di = new DirectoryInfo(path);
-            //获取所有文件
             try
             {
+                //获取所有文件
                 FileInfo[] frr = di.GetFiles();
                 if (frr != null)
                 {
-                    foreach (FileInfo item in frr)
-                    {
-                        if (!searching)
-                        {
-                            return;
-                        }
-                        //文件名
-                        string fname = item.Name;
-                        //按内容查询
-                        if (searchType == 0 || searchType == 1)
-                        {
-                            if (Regex.IsMatch(item.Extension, ".(" + txtreg + ")") && item.Length <= maxByte)
-                            {
-                                bool has = SearchFactory.GetSearch(item).hasText(item, this.txtnr.Text.Trim());
-                                if (has)
-                                {
-                                    addPanel(fname, item.FullName);
-                                    continue;
-                                }
-                            }
-                        }
-                        //按文件名查询
-                        if ((searchType == 0 || searchType == 2) && fname.Contains(this.txtnr.Text.Trim()))
-                        {
-                            addPanel(fname, item.FullName);
-                            continue;
-                        }
-                    }
+                    splitFilesToThread(frr);
                 }
-
             }
             catch (Exception e)
             {
@@ -197,31 +174,101 @@ namespace ContentQuery
             {
                 return;
             }
-            //获取所有文件夹
             try
             {
+                //获取所有文件夹
                 DirectoryInfo[] drr = di.GetDirectories();
                 if (drr != null)
                 {
-                    foreach (var item in drr)
-                    {
-                        if (!searching)
-                        {
-                            return;
-                        }
-                        if (".git".Equals(item.Name))
-                        {
-                            continue;
-                        }
-                        ThreadPool.QueueUserWorkItem(new WaitCallback(Run), item.FullName);
-                    }
+                    searchDirectory(drr);
                 }
             }
             catch (Exception e)
             {
                 Console.Error.WriteLine("查询异常: " + e.Message);
             }
+        }
 
+        private void splitFilesToThread(FileInfo[] frr)
+        {
+            if (searchType == 2 || frr.Length <= maxFileToThread)
+            {
+                searchFiles(frr);
+            }
+            else
+            {
+                for (int idx = 10; idx < frr.Length; idx += maxFileToThread)
+                {
+                    FileInfo[] arr = split(frr, idx, maxFileToThread);
+                    ThreadPool.QueueUserWorkItem(new WaitCallback(searchFiles), arr);
+                }
+                searchFiles(split(frr, 0, maxFileToThread));
+            }
+        }
+
+        private FileInfo[] split(FileInfo[] frr, int startIndex, int length)
+        {
+            if (startIndex + length > frr.Length)
+            {
+                length = frr.Length - startIndex;
+            }
+            FileInfo[] arr = new FileInfo[length];
+            for (int i = 0; i < length; i++)
+            {
+                arr[i] = frr[startIndex + i];
+            }
+            return arr;
+        }
+
+        private void searchFiles(object files)
+        {
+            FileInfo[] frr = files as FileInfo[];
+            foreach (FileInfo item in frr)
+            {
+                if (!searching)
+                {
+                    return;
+                }
+                Interlocked.Increment(ref searchFileCount);
+                //文件名
+                string fname = item.Name;
+                //按文件名查询
+                if ((searchType == 0 || searchType == 2) && fname.Contains(this.txtnr.Text.Trim()))
+                {
+                    addPanel(fname, item.FullName);
+                    continue;
+                }
+                //按内容查询
+                if (searchType == 0 || searchType == 1)
+                {
+                    if (Regex.IsMatch(item.Extension, ".(" + txtreg + ")") && item.Length <= maxByte)
+                    {
+                        Console.WriteLine("正在搜索: " + item.FullName);
+                        bool has = SearchFactory.GetSearch(item).hasText(item, this.txtnr.Text.Trim());
+                        if (has)
+                        {
+                            addPanel(fname, item.FullName);
+                            continue;
+                        }
+                    }
+                }
+            }
+        }
+
+        private void searchDirectory(DirectoryInfo[] drr)
+        {
+            foreach (var item in drr)
+            {
+                if (!searching)
+                {
+                    return;
+                }
+                if (".git".Equals(item.Name))
+                {
+                    continue;
+                }
+                ThreadPool.QueueUserWorkItem(new WaitCallback(Run), item.FullName);
+            }
         }
         #endregion
 
@@ -264,7 +311,7 @@ namespace ContentQuery
             p.Controls.Add(link);
             lock (list)
             {
-                l.Text = (++count) + "： " + fname;
+                l.Text = Interlocked.Increment(ref searchCount) + "： " + fname;
                 list.Add(p);
             }
         }
@@ -273,18 +320,20 @@ namespace ContentQuery
         #region 按页显示Panel
         private void loadPanel(int page)
         {
-            int countp;
-            if (count % pageSize == 0)
+            int maxPage = (searchCount - 1) / pageSize + 1;
+            if (page < 1)
             {
-                countp = count / pageSize;
+                page = 1;
             }
-            else
+            else if (page > maxPage)
             {
-                countp = count / pageSize + 1;
+                page = maxPage;
             }
-            this.labjg.Text = "查找结果(" + count + ")： " + page + "/" + countp;
-            int i = (page - 1) * pageSize;
-            for (int j = 0; i < list.Count; i++, j++)
+            pageIndex = page;
+            this.pNr.Controls.Clear();
+            this.labjg.Text = "查找结果(" + searchCount + ")： " + pageIndex + "/" + maxPage;
+            int i = (pageIndex - 1) * pageSize;
+            for (int j = 0; i < searchCount; i++, j++)
             {
                 Panel p = list[i];
                 p.Location = new Point(0, panelHeight * j);
@@ -315,19 +364,48 @@ namespace ContentQuery
         #endregion
 
         #region 计时器检测是否查询完毕
-        int mcount = 0;
+        static int mcount = 0;
         private void timer1_Tick(object sender, EventArgs e)
         {
-            this.labjg.Text = "查找结果(" + list.Count + ")： 1/1";
-            if (mcount++ == 0)
+            this.labjg.Text = "查找结果(" + searchCount + ")： " + pageIndex + "/" + ((searchCount - 1) / pageSize + 1);
+            if (searchShow)
             {
-                this.labmess.Text = "查询中，请稍后";
+                this.labmess.Text = "";
+                if (mcount == 0)
+                {
+                    if (!searching)
+                    {
+                        this.Text = "正在终止线程";
+                    }
+                    else
+                    {
+                        this.Text = "搜索中(" + searchFileCount + ")，请稍后";
+                    }
+                }
+                else
+                {
+                    this.Text += ".";
+                }
             }
             else
             {
-                this.labmess.Text += ".";
+                if (mcount == 0)
+                {
+                    if (!searching)
+                    {
+                        this.labmess.Text = "正在终止线程";
+                    }
+                    else
+                    {
+                        this.labmess.Text = "搜索中(" + searchFileCount + ")，请稍后";
+                    }
+                }
+                else
+                {
+                    this.labmess.Text += ".";
+                }
             }
-            if (mcount == 4)
+            if (++mcount == 5)
             {
                 mcount = 0;
             }
@@ -336,30 +414,48 @@ namespace ContentQuery
                 searchComplete();
                 return;
             }
+            else if (!searchShow && searchCount > 1)
+            {
+                searchShow = searchCount >= pageSize;
+                showPanel(1);
+            }
         }
 
         private void searchComplete()
         {
             searching = false;
+            searchShow = false;
+            this.Text = "查找相关内容的文件";
             this.but_search.Text = "搜索";
             this.timer_query.Enabled = false;
-            this.labmess.Text = "";
-            this.labmess.Location = new Point(8, 105);
-            loadPanel(1);
-            if (list.Count == 0)
+            showPanel(pageIndex);
+            Console.WriteLine("线程数: " + runThreadCount());
+            searchCount = list.Count;
+            if (searchCount == 0)
             {
                 MessageBox.Show("没有找到相关的数据！");
             }
         }
 
+        private void showPanel(int page)
+        {
+            this.labmess.Text = "";
+            this.labmess.Location = new Point(8, 105);
+            this.labmess.Visible = false;
+            loadPanel(page);
+        }
+
         private static bool checkThreadPoolComplete()
+        {
+            return runThreadCount() == 0;
+        }
+
+        private static int runThreadCount()
         {
             int maxWorkerThreads, workerThreads, portThreads;
             ThreadPool.GetMaxThreads(out maxWorkerThreads, out portThreads);
             ThreadPool.GetAvailableThreads(out workerThreads, out portThreads);
-            int count = maxWorkerThreads - workerThreads;
-            Console.WriteLine("线程数: " + count);
-            return count == 0;
+            return maxWorkerThreads - workerThreads;
         }
         #endregion
 
@@ -379,7 +475,6 @@ namespace ContentQuery
             MessageBox.Show(message, "帮助");
         }
         #endregion
-
 
     }
 }
