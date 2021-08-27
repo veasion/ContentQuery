@@ -15,23 +15,27 @@ namespace ContentQuery
         // 是否正在搜索
         static bool searching = false;
         //后缀
-        static string txtreg = "";
+        static string suffixStr = "";
         //查询的文件数量
         static int searchCount = 0;
         //文件Panel集合
         static List<Panel> list = new List<Panel>();
         //搜索类型: 0 文件名和内容 1内容 2文件名
         static int searchType = 0;
-        // 最大搜索文件(300M)
-        static int maxByte = 1024 * 1024 * 300;
+        // 最大搜索文件(100M)
+        static int maxByte = 1024 * 1024 * 100;
         // 内容高度, 分页大小
         static int panelHeight = 60, pageIndex = 1, pageSize = 5;
         // 支持搜索中实时展示
         static bool searchShow = false;
-        // 多少个文件一个线程
-        const int maxFileToThread = 10;
+        // 多少个文件一个线程(复杂文件)
+        const int maxDiffFileToThread = 4;
+        // 多少个文件一个线程(简单文件)
+        const int maxSimpleFileToThread = 12;
         // 总共扫描文件数
         static int searchFileCount = 0;
+        // 是否有复杂文件后缀
+        static bool hasSearchDiffFile = false;
 
         public QueryForm()
         {
@@ -85,27 +89,28 @@ namespace ContentQuery
             this.labjg.Text = "查找结果(0)： 1/1";
             mcount = 0;
             searchCount = 0;
-            string reg = "";
-            reg += this.cbotxt.Checked ? "|txt" : "";
-            reg += this.cbo_docx.Checked ? "|docx" : "";
-            reg += this.cbo_xlsx.Checked ? "|xlsx" : "";
-            reg += this.cbo_md.Checked ? "|md" : "";
+
+            string suffix = "";
+            suffix += this.cbotxt.Checked ? "|txt" : "";
+            suffix += this.cbo_docx.Checked ? "|docx" : "";
+            suffix += this.cbo_xlsx.Checked ? "|xlsx" : "";
+            suffix += this.cbo_md.Checked ? "|md" : "";
             string hz = this.txthz.Text.Trim();
             if (!hz.Equals(""))
             {
-                reg += "|" + hz;
+                suffix += "|" + hz;
+            }
+            suffixStr = (suffix + "|").Replace(" ", "");
+            hasSearchDiffFile = suffixStr.Contains("|doc|") || suffixStr.Contains("|xls|") || suffixStr.Contains("|pdf|");
+            if ("*".Equals(hz))
+            {
+                suffixStr = "*";
+                hasSearchDiffFile = true;
             }
 
             this.labmess.Text = "查询中，请稍后...";
             this.labmess.Location = new Point(60, (this.Height + 16) / 2);
             this.labmess.Visible = true;
-
-            if (!reg.Trim().Equals(""))
-            {
-                reg = reg.Substring(1);
-            }
-
-            txtreg = reg;
 
             ThreadPool.QueueUserWorkItem(new WaitCallback(Run), this.txtpath.Text);
 
@@ -159,11 +164,11 @@ namespace ContentQuery
             DirectoryInfo di = new DirectoryInfo(path);
             try
             {
-                //获取所有文件
-                FileInfo[] frr = di.GetFiles();
-                if (frr != null)
+                //获取所有文件夹
+                DirectoryInfo[] drr = di.GetDirectories();
+                if (drr != null)
                 {
-                    splitFilesToThread(frr);
+                    searchDirectory(drr);
                 }
             }
             catch (Exception e)
@@ -176,11 +181,11 @@ namespace ContentQuery
             }
             try
             {
-                //获取所有文件夹
-                DirectoryInfo[] drr = di.GetDirectories();
-                if (drr != null)
+                //获取所有文件
+                FileInfo[] frr = di.GetFiles();
+                if (frr != null)
                 {
-                    searchDirectory(drr);
+                    splitFilesToThread(frr);
                 }
             }
             catch (Exception e)
@@ -191,33 +196,30 @@ namespace ContentQuery
 
         private void splitFilesToThread(FileInfo[] frr)
         {
-            if (searchType == 2 || frr.Length <= maxFileToThread)
+            if (searchType == 2 || frr.Length <= maxDiffFileToThread)
             {
                 searchFiles(frr);
             }
             else
             {
-                for (int idx = 10; idx < frr.Length; idx += maxFileToThread)
+                List<FileInfo[]> list;
+                if (hasSearchDiffFile)
                 {
-                    FileInfo[] arr = split(frr, idx, maxFileToThread);
-                    ThreadPool.QueueUserWorkItem(new WaitCallback(searchFiles), arr);
+                    list = FileSplitUtils.optimizeSplit(frr, maxSimpleFileToThread, maxDiffFileToThread);
                 }
-                searchFiles(split(frr, 0, maxFileToThread));
+                else
+                {
+                    list = FileSplitUtils.split(frr, maxSimpleFileToThread);
+                }
+                if (list.Count > 1)
+                {
+                    for (int i = 1; i < list.Count; i++)
+                    {
+                        ThreadPool.QueueUserWorkItem(new WaitCallback(searchFiles), list[i]);
+                    }
+                }
+                searchFiles(list[0]);
             }
-        }
-
-        private FileInfo[] split(FileInfo[] frr, int startIndex, int length)
-        {
-            if (startIndex + length > frr.Length)
-            {
-                length = frr.Length - startIndex;
-            }
-            FileInfo[] arr = new FileInfo[length];
-            for (int i = 0; i < length; i++)
-            {
-                arr[i] = frr[startIndex + i];
-            }
-            return arr;
         }
 
         private void searchFiles(object files)
@@ -241,7 +243,7 @@ namespace ContentQuery
                 //按内容查询
                 if (searchType == 0 || searchType == 1)
                 {
-                    if (Regex.IsMatch(item.Extension, ".(" + txtreg + ")") && item.Length <= maxByte)
+                    if ((suffixStr == "*" || suffixStr.Contains("|" + item.Extension.Substring(1) + "|")) && item.Length <= maxByte)
                     {
                         Console.WriteLine("正在搜索: " + item.FullName);
                         bool has = SearchFactory.GetSearch(item).hasText(item, this.txtnr.Text.Trim());
@@ -379,7 +381,7 @@ namespace ContentQuery
                     }
                     else
                     {
-                        this.Text = "搜索中(" + searchFileCount + ")，请稍后";
+                        this.Text = "搜索中(" + searchFileCount + ")，请稍后" + runThreadCount();
                     }
                 }
                 else
@@ -397,7 +399,7 @@ namespace ContentQuery
                     }
                     else
                     {
-                        this.labmess.Text = "搜索中(" + searchFileCount + ")，请稍后";
+                        this.labmess.Text = "搜索中(" + searchFileCount + ")，请稍后" + runThreadCount();
                     }
                 }
                 else
@@ -470,6 +472,8 @@ namespace ContentQuery
                     多个后缀用 | 隔开，不能有空格
 
                     如: doc | xls | pdf | pptx | xml | sql | java | vue | js
+
+                    匹配所有后缀填 *
                     
                                                             -- luozhuowei";
             MessageBox.Show(message, "帮助");

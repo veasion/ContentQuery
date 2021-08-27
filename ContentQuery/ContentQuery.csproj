@@ -76,6 +76,7 @@
   <ItemGroup>
     <Compile Include="CacheHelper.cs" />
     <Compile Include="ExcelSearch.cs" />
+    <Compile Include="FileSplitUtils.cs" />
     <Compile Include="FileUtils.cs" />
     <Compile Include="PdfSearch.cs" />
     <Compile Include="PptSearch.cs" />
