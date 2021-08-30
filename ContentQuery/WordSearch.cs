@@ -43,8 +43,10 @@ namespace ContentQuery
             try
             {
                 type.GetMethod("LoadFromFile", new Type[] { typeof(string) }).Invoke(obj, new string[] { fileInfo.FullName });
-                var context = type.GetMethod("GetText").Invoke(obj, null) as string;
-                return context.Contains(text);
+                // return (type.GetMethod("GetText").Invoke(obj, null) as string).Contains(text);
+                // type.GetMethod("LoadFromFileInReadMode", new Type[] { typeof(string), assem.GetType("Spire.Doc.FileFormat") }).Invoke(obj, new string[] { fileInfo.FullName, null });
+                var textSelection = type.GetMethod("FindString", new Type[] { typeof(string), typeof(bool), typeof(bool) }).Invoke(obj, new object[] { text, true, false });
+                return textSelection != null;
             }
             finally
             {

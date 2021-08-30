@@ -4,7 +4,6 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.Threading;
 using System.IO;
-using System.Text.RegularExpressions;
 using System.Diagnostics;
 
 namespace ContentQuery
@@ -28,19 +27,22 @@ namespace ContentQuery
         static int panelHeight = 60, pageIndex = 1, pageSize = 5;
         // 支持搜索中实时展示
         static bool searchShow = false;
-        // 多少个文件一个线程(复杂文件)
-        const int maxDiffFileToThread = 4;
-        // 多少个文件一个线程(简单文件)
-        const int maxSimpleFileToThread = 12;
+        static int searchShowCount = 0;
+        // 多少个文件一个线程(复杂文件doc/xls/pdf)
+        const int maxDiffFileToThread = 3;
+        // 多少个文件一个线程(简单文件txt/docx/xlsx/pptx...)
+        const int maxSimpleFileToThread = 15;
         // 总共扫描文件数
         static int searchFileCount = 0;
         // 是否有复杂文件后缀
         static bool hasSearchDiffFile = false;
+        // 搜索时间
+        static DateTime searchTime;
 
         public QueryForm()
         {
-            ThreadPool.SetMinThreads(5, 5);
-            ThreadPool.SetMaxThreads(50, 100);
+            ThreadPool.SetMinThreads(5, 10);
+            ThreadPool.SetMaxThreads(50, 1000);
             InitializeComponent();
             this.cbo_type.SelectedIndex = 0;
             string path = CacheHelper.getOtherText();
@@ -113,6 +115,7 @@ namespace ContentQuery
             this.labmess.Location = new Point(60, (this.Height + 16) / 2);
             this.labmess.Visible = true;
 
+            searchTime = DateTime.Now;
             ThreadPool.QueueUserWorkItem(new WaitCallback(Run), this.txtpath.Text);
 
             this.but_search.Text = "暂停";
@@ -212,14 +215,10 @@ namespace ContentQuery
                 {
                     list = FileSplitUtils.split(frr, maxSimpleFileToThread);
                 }
-                if (list.Count > 1)
+                for (int i = 0; i < list.Count; i++)
                 {
-                    for (int i = 1; i < list.Count; i++)
-                    {
-                        ThreadPool.QueueUserWorkItem(new WaitCallback(searchFiles), list[i]);
-                    }
+                    ThreadPool.QueueUserWorkItem(new WaitCallback(searchFiles), list[i]);
                 }
-                searchFiles(list[0]);
             }
         }
 
@@ -246,7 +245,7 @@ namespace ContentQuery
                 {
                     if (item.Length <= maxByte && (suffixStr == "*" || (item.Extension.Length > 1 && suffixStr.Contains("|" + item.Extension.Substring(1) + "|"))))
                     {
-                        Console.WriteLine("正在搜索: " + item.FullName);
+                        // Console.WriteLine("正在搜索: " + item.FullName);
                         bool has = SearchFactory.GetSearch(item).hasText(item, this.txtnr.Text.Trim());
                         if (has)
                         {
@@ -374,36 +373,30 @@ namespace ContentQuery
             if (searchShow)
             {
                 this.labmess.Text = "";
-                if (mcount == 0)
+                if (!searching)
                 {
-                    if (!searching)
-                    {
-                        this.Text = "正在终止线程";
-                    }
-                    else
-                    {
-                        this.Text = "搜索中(" + searchFileCount + ")，请稍后" + runThreadCount();
-                    }
+                    this.Text = "正在终止线程";
                 }
                 else
+                {
+                    this.Text = "搜索中(" + searchFileCount + ")，请稍后" + runThreadCount();
+                }
+                for (int i = 0; i < mcount; i++)
                 {
                     this.Text += ".";
                 }
             }
             else
             {
-                if (mcount == 0)
+                if (!searching)
                 {
-                    if (!searching)
-                    {
-                        this.labmess.Text = "正在终止线程";
-                    }
-                    else
-                    {
-                        this.labmess.Text = "搜索中(" + searchFileCount + ")，请稍后" + runThreadCount();
-                    }
+                    this.labmess.Text = "正在终止线程";
                 }
                 else
+                {
+                    this.labmess.Text = "搜索中(" + searchFileCount + ")，请稍后" + runThreadCount();
+                }
+                for (int i = 0; i < mcount; i++)
                 {
                     this.labmess.Text += ".";
                 }
@@ -417,10 +410,14 @@ namespace ContentQuery
                 searchComplete();
                 return;
             }
-            else if (!searchShow && searchCount > 1)
+            else if (searchCount > 0 && (!searchShow || searchCount <= pageSize))
             {
-                searchShow = searchCount >= pageSize;
-                showPanel(1);
+                searchShow = true;
+                if (searchShowCount != searchCount)
+                {
+                    showPanel(1);
+                    searchShowCount = searchCount;
+                }
             }
         }
 
@@ -428,16 +425,33 @@ namespace ContentQuery
         {
             searching = false;
             searchShow = false;
+            searchShowCount = 0;
             this.Text = "查找相关内容的文件";
             this.but_search.Text = "搜索";
             this.timer_query.Enabled = false;
             showPanel(pageIndex);
             Console.WriteLine("线程数: " + runThreadCount());
             searchCount = list.Count;
+            TimeSpan timeSpan = DateTime.Now.Subtract(searchTime);
+            string tiemStr;
+            if (timeSpan.TotalSeconds <= 60)
+            {
+                tiemStr = string.Format("{0:F}", timeSpan.TotalSeconds) + "秒";
+            }
+            else
+            {
+                tiemStr = string.Format("{0:F}", timeSpan.TotalMinutes) + "分钟";
+            }
+            string tip;
             if (searchCount == 0)
             {
-                MessageBox.Show("没有找到相关的数据！");
+                tip = "没有找到相关的数据！\n\n搜索文件: " + searchFileCount + "个\n\n耗时: " + tiemStr;
             }
+            else
+            {
+                tip = "搜索完成，共找到" + searchCount + "个文件！\n\n搜索文件: " + searchFileCount + "个\n\n耗时: " + tiemStr;
+            }
+            MessageBox.Show(tip, "结果", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void showPanel(int page)
