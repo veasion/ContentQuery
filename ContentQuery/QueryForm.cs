@@ -165,21 +165,22 @@ namespace ContentQuery
             }
             string path = name as string;
             //文件夹
-            DirectoryInfo di = new DirectoryInfo(path);
+            DirectoryInfo di = null;
             try
             {
+                di = new DirectoryInfo(path);
                 //获取所有文件夹
                 DirectoryInfo[] drr = di.GetDirectories();
                 if (drr != null)
                 {
-                    searchDirectory(drr);
+                    searchDirectory(drr, path.ToLower().Equals("c:\\"));
                 }
             }
             catch (Exception e)
             {
                 Console.Error.WriteLine("查询异常: " + e.Message);
             }
-            if (!searching)
+            if (di == null || !searching)
             {
                 return;
             }
@@ -259,8 +260,17 @@ namespace ContentQuery
 
         private void searchDirectory(DirectoryInfo[] drr)
         {
+            searchDirectory(drr, false);
+        }
+
+        private void searchDirectory(DirectoryInfo[] drr, bool isSystemC)
+        {
             foreach (var item in drr)
             {
+                if (isSystemC && FileUtils.skipPath.Contains(item.FullName.ToLower()))
+                {
+                    continue;
+                }
                 if (!searching)
                 {
                     return;
@@ -379,7 +389,7 @@ namespace ContentQuery
                 }
                 else
                 {
-                    this.Text = "搜索中(" + searchFileCount + ")，请稍后" + runThreadCount();
+                    this.Text = "搜索中(" + searchFileCount + ")，请稍后";
                 }
                 for (int i = 0; i < mcount; i++)
                 {
@@ -394,7 +404,7 @@ namespace ContentQuery
                 }
                 else
                 {
-                    this.labmess.Text = "搜索中(" + searchFileCount + ")，请稍后" + runThreadCount();
+                    this.labmess.Text = "搜索中(" + searchFileCount + ")，请稍后";
                 }
                 for (int i = 0; i < mcount; i++)
                 {

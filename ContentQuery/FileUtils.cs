@@ -11,6 +11,16 @@ namespace ContentQuery
     class FileUtils
     {
 
+        public static HashSet<string> skipPath = new HashSet<string>();
+
+        static FileUtils()
+        {
+            skipPath.Add(@"C:\Program Files".ToLower());
+            skipPath.Add(@"C:\Program Files (x86)".ToLower());
+            skipPath.Add(@"C:\ProgramData".ToLower());
+            skipPath.Add(@"C:\Windows".ToLower());
+        }
+
         public static bool hasTextByPackage(FileInfo fileInfo, string text, string uriString)
         {
             try

@@ -7,3 +7,4 @@ D:\Veasion\projects\c#\ContentQuery\ContentQuery\obj\Debug\ContentQuery.csproj.G
 D:\Veasion\projects\c#\ContentQuery\ContentQuery\obj\Debug\ContentQuery.csproj.CoreCompileInputs.cache
 D:\Veasion\projects\c#\ContentQuery\ContentQuery\obj\Debug\ContentQuery.exe
 D:\Veasion\projects\c#\ContentQuery\ContentQuery\obj\Debug\ContentQuery.pdb
+D:\Veasion\projects\c#\ContentQuery\ContentQuery\obj\Debug\ContentQuery.csprojAssemblyReference.cache

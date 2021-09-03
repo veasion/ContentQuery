@@ -15,7 +15,14 @@ namespace ContentQuery
 
         public static bool hasTextIgnoreEncoding(FileInfo fileInfo, string text)
         {
-            return FileUtils.hasText(fileInfo, text, FileUtils.GetFileEncodeType(fileInfo.FullName));
+            try
+            {
+                return FileUtils.hasText(fileInfo, text, FileUtils.GetFileEncodeType(fileInfo.FullName));
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
     }
 }
