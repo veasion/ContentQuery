@@ -1,13 +1,11 @@
 ## 概述
 项目名: ContentQuery
 
-gitlab仓库地址: http://git.odianyun.com/luozhuowei/ContentQuery
-
 软件安装下载地址: https://veasion-oss.oss-cn-shanghai.aliyuncs.com/soft/ContentQuery.rar
 
 项目简介：
 
-​	支持快速搜索各种文件名称和内容，doc/xls/docx/xlsx/pdf/pptx/md/txt 等各种文件。
+​	支持快速搜索各种文件内容和名称，doc/xls/docx/xlsx/pdf/pptx/md/txt 等各种文件。
 
 
 
